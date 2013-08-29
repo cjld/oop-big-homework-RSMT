@@ -26,7 +26,7 @@ struct Statu {
 
   void print(vector<int> *lineX,vector<int> *lineY) {
     FOR(i,0,2) {
-      cout<<a[i].first<<' '<<a[i].second<<' '<<a[i+1].first<<' '<<a[i+1].second<<endl;
+      //cout<<a[i].first<<' '<<a[i].second<<' '<<a[i+1].first<<' '<<a[i+1].second<<endl;
       lineX->push_back(a[i].first);
       lineX->push_back(a[i+1].first);
       lineY->push_back(a[i].second);
@@ -198,6 +198,7 @@ struct Tree {
   void dp(vector<int> &lineX,vector<int> &lineY) {
     lineX.clear();
     lineY.clear();
+    if (n<=1) return;
     this->lineX=&lineX;
     this->lineY=&lineY;
     FOR(i,1,n) if (du[i]<=1) {
