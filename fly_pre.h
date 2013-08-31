@@ -2,8 +2,9 @@
 #include <algorithm>
 #include <vector>
 #include <set>
-#include <functional>
 using namespace std;
+
+namespace pre {
 
 typedef pair<int,pair<int,int> > pair3;
 #define mkPair3(x,y,z) make_pair(x,make_pair(y,z))
@@ -72,8 +73,6 @@ struct Tree {
     DELARR(p);
     DELARR(du);
     DELARR(f);
-    DELARR(x);
-    DELARR(y);
   }
 
   void link(int a,int b) {
@@ -84,17 +83,14 @@ struct Tree {
 
   void init(int nn,int *xx,int *yy) {
     n=nn;
-    d=new int[n+1];
-    next=new int[(n+1)*2];
-    p=new int[(n+1)*2];
-    du=new int[n+1];
-    x=new int[n+1];
-    y=new int[n+1];
+    d=new int[n*3];
+    FOR(i,1,n) d[i]=0;
+    next=new int[n*3];
+    p=new int[n*3];
+    du=new int[n*3];
+    FOR(i,1,n) du[i]=0;
+    x=xx,y=yy;
     f=new FStatu[n+1];
-    FOR(i,1,n) {
-      du[i]=d[i]=0;
-      x[i]=xx[i],y[i]=yy[i];
-    }
   }
 
   bool isNb(int x, int y) {
@@ -107,12 +103,7 @@ struct Tree {
     int l=x1,r=x2;
     if (l>r) swap(l,r);
     set<int> sx,sy;
-    vector<int> nb;
-    nb.push_back(ii);
-    nb.push_back(jj);
-    FORE(ii,j,k) if (j!=jj) nb.push_back(j);
-    FORE(jj,j,k) if (j!=ii) nb.push_back(j);
-    for (auto i : nb) if (x[i]>=l && x[i]<=r) {
+    FOR(i,1,n) if (x[i]>=l && x[i]<=r && (isNb(i,ii) || isNb(i,jj))) {
       if (lFlag && l!=x[i] && r!=x[i]) continue;
       if (sx.count(x[i])) continue;
       sx.insert(x[i]);
@@ -121,7 +112,7 @@ struct Tree {
     }
     l=y1,r=y2;
     if (l>r) swap(l,r);
-    for (auto i : nb) if (y[i]>l && y[i]<r) {
+    FOR(i,1,n) if (y[i]>l && y[i]<r && (isNb(i,ii) || isNb(i,jj))) {
       if (lFlag && l!=y[i] && r!=y[i]) continue;
       if (sy.count(y[i])) continue;
       sy.insert(y[i]);
@@ -234,13 +225,12 @@ struct Tree {
           lineY.push_back(y[j]);
       }
   }
-
 };
 
 
 struct GetTree {
   pair<pair3,pair<int,int> > *e=0;
-  int *fa=0,*x=0,*y=0,*d1=0,*d2=0,*d3=0,*st=0,*px,*py;
+  int *fa=0,*x=0,*y=0;
   int n,t=0,w1,w2,w3;
   Tree tree;
   int lFlag=0;
@@ -250,81 +240,24 @@ struct GetTree {
     DELARR(fa);
     DELARR(x);
     DELARR(y);
-    DELARR(d1);
-    DELARR(d2);
-    DELARR(d3);
-    DELARR(st);
   }
 
   int find(int x) {return fa[x]==x?x:fa[x]=find(fa[x]);}
-  void newEdge(int i,int j) {
-      e[++t]=make_pair(mkPair3(
-                           abs(px[i]-px[j])+abs(py[i]-py[j]),
-                           -abs(py[i]-py[j]),
-                           -max(px[i],px[j])),
-                       make_pair(i,j)
-      );
-  }
-#define LOWBIT(x) ((x)&(-(x)))
-  int ask(int i, function<bool(int,int)> cmp) {
-    int ans=0;
-    for (;i;i-=LOWBIT(i))
-      if (cmp(ans,st[i])) ans=st[i];
-    return ans;
-  }
-
-  void ins(int i, int x, function<bool(int,int)> cmp) {
-    for (;i<=n;i+=LOWBIT(i))
-      if (cmp(st[i],x)) st[i]=x;
-  }
-
-  void calcEdge(int *x,int *y) {
-    x[0]=y[0]=-(1<<28);
-    FOR(i,1,n) d1[i]=d2[i]=i,st[i]=0;
-    sort(d1+1, d1+1+n, [&](int i,int j)->bool {return x[i]<x[j];});
-    sort(d2+1, d2+1+n, [&](int i,int j)->bool {return y[i]-x[i]<y[j]-x[j];});
-    int ps=0;
-    FOR(i,1,n) {
-        if (i==1 || (y[d2[i]]-x[d2[i]] != y[d2[i-1]]-x[d2[i-1]])) ps++;
-        d3[d2[i]]=ps;
-    }
-    auto cmp=[&](int i,int j)->bool {return x[i]+y[i]<x[j]+y[j];};
-    FOR(i,1,n) {
-      int j=d1[i];
-      int k=ask(d3[j],cmp);
-      ins(d3[j],j,cmp);
-      if (k!=0) newEdge(j,k);
-    }
-  }
-
-  void installEdge() {
-    calcEdge(x,y);
-    FOR(i,1,n) swap(x[i],y[i]);
-    calcEdge(x,y);
-    FOR(i,1,n) y[i]=-y[i];
-    calcEdge(x,y);
-    FOR(i,1,n) x[i]=-x[i],y[i]=-y[i],swap(x[i],y[i]);
-    calcEdge(x,y);
-  }
 
   void work(int nn,int *xx,int *yy) {
     n=nn;
-    px=xx,py=yy;
-    e=new pair<pair3,pair<int,int> >[(n+1)*4];
+    e=new pair<pair3,pair<int,int> >[(n+1)*(n+1)];
     fa=new int[n+1];
     x=new int[n+1];
     y=new int[n+1];
-    d1=new int[n+1];
-    d2=new int[n+1];
-    d3=new int[n+1];
-    st=new int[n+1];
     FOR(i,1,n) {
       fa[i]=i;
       x[i]=xx[i],y[i]=yy[i];
+      FOR(j,1,i-1)
+        e[++t]=make_pair(mkPair3(abs(x[i]-x[j])+abs(y[i]-y[j]),-abs(y[i]-y[j]),-max(x[i],x[j])),make_pair(i,j));
     }
     tree.init(n,x,y);
     tree.lFlag=lFlag;
-    installEdge();
     sort(e+1,e+1+t);
     w1=0,w2=0,w3=0;
     FOR(i,1,t) {
@@ -342,3 +275,5 @@ struct GetTree {
   }
 
 };
+
+}

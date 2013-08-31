@@ -16,5 +16,7 @@ oop-big-homework-RSMT
     getTree.tree.dp(lineX,lineY);
     //lineX，lineY是两个vector引用传参，表示{ (lineX[0],lineY[0]) -> (lineX[1],lineY[1]) , (lineX[2],lineY[2]) -> (lineX[3],lineY[3]) ... }
 
+##update
 
+* 已优化为nlogn
 

@@ -7,6 +7,7 @@
 QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+QMAKE_CXXFLAGS += -std=c++11
 
 TARGET = RSMT
 TEMPLATE = app
@@ -16,6 +17,7 @@ SOURCES += main.cpp\
         widget.cpp
 
 HEADERS  += widget.h\
-        fly.h
+        fly.h \
+    fly_pre.h
 
 FORMS    += widget.ui
